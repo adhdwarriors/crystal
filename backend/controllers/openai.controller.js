@@ -31,7 +31,7 @@ async function getBestMatch(note) {
 
 exports.getBestMatch = getBestMatch;
 
-const SUMMARY_QUESTION = 'Please summarize the following text excerpt in 8 words or less.';
+const SUMMARY_QUESTION = 'Please summarize the following text excerpt as a task or focus in 5-8 words.';
 async function summarize(text) {
   console.log("Summarizing text...")
   console.log("Text: " + text)
