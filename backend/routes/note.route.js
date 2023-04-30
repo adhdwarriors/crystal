@@ -14,7 +14,7 @@ const internal_error_response = {response: 500, error: 'Internal error occurred.
 // POST /create
 
 const create_schema = Joi.object().keys({
-    sphere_id: Joi.number().required(),
+    sphere_id: Joi.number().optional(),
     title: Joi.string().required(),
     desc: Joi.string().required(),
     type_id: Joi.number().required(),
