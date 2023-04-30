@@ -27,7 +27,7 @@ async function createMongo(note, user_id) {
     }
     await mongo().db('whatsgood').collection('notes')
         .insertOne(note_to_insert);
-    await mongo().db('whatsgood').collection('users')
+    await mongo().db('whatsgood').collection('people')
         .updateOne({id: user_id}, {$addToSet: {notes: note.id}})
 }
 
