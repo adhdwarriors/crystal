@@ -9,9 +9,11 @@ const logger = require('morgan');
 const session = require('express-session');
 var SQLiteStore = require('connect-sqlite3')(session);
 
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const authRouter = require('./routes/auth');
+const indexRouter = require('./routes/index.route');
+const usersRouter = require('./routes/users.route');
+const authRouter = require('./routes/auth.route');
+const noteRouter = require('./routes/note.route');
+const userRouter = require('./routes/user.route');
 
 const app = express();
 app.use(session({
@@ -37,6 +39,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
+app.use('/note', noteRouter);
+app.use('/user', userRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -57,34 +61,34 @@ app.use(function(err, req, res, next) {
 module.exports = app;
 
 
-const {Firestore} = require('@google-cloud/firestore');
-
-// Create a new client
-const firestore = new Firestore();
-
-async function quickstart() {
-  // Obtain a document reference.
-  const document = firestore.doc('posts/intro-to-firestore');
-
-  // Enter new data into the document.
-  await document.set({
-    title: 'Welcome to Firestore',
-    body: 'Hello World',
-  });
-  console.log('Entered new data into the document');
-
-  // Update an existing document.
-  await document.update({
-    body: 'My first Firestore app',
-  });
-  console.log('Updated an existing document');
-
-  // Read the document.
-  const doc = await document.get();
-  console.log('Read the document');
-
-  // Delete the document.
-  // await document.delete();
-  // console.log('Deleted the document');
-}
-quickstart();
+// const {Firestore} = require('@google-cloud/firestore');
+//
+// // Create a new client
+// const firestore = new Firestore();
+//
+// async function quickstart() {
+//   // Obtain a document reference.
+//   const document = firestore.doc('posts/intro-to-firestore');
+//
+//   // Enter new data into the document.
+//   await document.set({
+//     title: 'Welcome to Firestore',
+//     body: 'Hello World',
+//   });
+//   console.log('Entered new data into the document');
+//
+//   // Update an existing document.
+//   await document.update({
+//     body: 'My first Firestore app',
+//   });
+//   console.log('Updated an existing document');
+//
+//   // Read the document.
+//   const doc = await document.get();
+//   console.log('Read the document');
+//
+//   // Delete the document.
+//   // await document.delete();
+//   // console.log('Deleted the document');
+// }
+// quickstart();
