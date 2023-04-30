@@ -26,6 +26,7 @@ import ThoughtCardMag from "../components/ThoughtCardMag"
 import { SelectMultipleButton } from "react-native-selectmultiple-button"
 import useNotes, { filterOnTopics, filterOnTypes } from "../services/backend/userNotes";
 const GET_URL = 'http://172.104.196.152:3000/user?user_id=1&token=blah'
+const URL = 'http://172.104.196.152:3000/note/create';
 
 export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function DemoDebugScreen(
   _props,
@@ -45,14 +46,34 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
     SPHERES.map((sphere, id) => {
       return false
     }),
-  )
+  );
+  const [types, setTypes] = useState<boolean[]>(
+    TYPES.map((sphere, id) => {
+      return false
+    }),
+  );
   const [editedThought, setEditedThought] = useState<Thought>(THOUGHTS[selThought])
 
   const [title, setTitle] = useState<string>(THOUGHTS[selThought].title)
   const [desc, setDesc] = useState<string>(THOUGHTS[selThought].desc)
-
+  const [userId, setUserId] = useState<number>(1);
   const [refreshing, setRefreshing] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
+
+  const insertNewThought = () => {
+    const { id, title, desc, type } = thought;
+    const spheres = lifeSpheres.filter((val, id) => lifeSpheres[id])
+    fetch(URL, {
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      // CHANGE THIS
+      body: JSON.stringify({title: thought.title, content: thought.desc, user_id: userId})
+    }).then(res => res.json())
+    .then(res => console.log(res))
+    .catch(error => console.log(error))
+  }
 
   const insertThought = () => {
     const { id, title, desc, type } = thought
@@ -89,8 +110,7 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
   return (
     <Screen preset="scroll" style={styles.container} safeAreaEdges={["top"]}>
       <SafeAreaView style={styles.container}>
-        {/* <Modal visible={true}> */}
-        {console.log("THOUGHTS:", thoughts)}
+        <View>
         <Text>{thoughts ? thoughts[0].body : "Hello!"}</Text>
         <FlatList
           style={styles.noteList}
@@ -108,13 +128,13 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
         <Button
           onPress={() => setMode(1)}
           title="Add Thought"
-          color="#841584"
+          // style={styles.bbutton}
           accessibilityLabel="Learn more about this purple button"
         />
         <Modal visible={mode == 1}>
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <View>
+              <View style={{height: "70%"}}>
                 <TextInput
                   style={styles.text}
                   placeholder="ADD TITLE..."
@@ -129,6 +149,31 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
                   onChangeText={(text) => setThought({ ...thought, desc: text })}
                   multiline={true}
                 />
+                <Text style={styles.head}>Type</Text>
+                <FlatList
+                    data={TYPES}
+                    numColumns={3}
+                    keyExtractor={(item, index) => {
+                      return item.title
+                    }}
+                    renderItem={({ item }) => (
+                      <SelectMultipleButton
+                        multiple={true}
+                        value={item.title}
+                        key={item.id}
+                        selected={types[item.id]}
+                        singleTap={(valTap) => {
+                          console.log("TYPES!!!!", types)
+                          setTypes(
+                            types.map((type, index) =>
+                              index == item.id ? !types[index] : types[index],
+                            ),
+                          )
+                        }}
+                      />
+                    )}
+                  />
+                <Text style={styles.categories}>Categories</Text>
                 <View style={{ height: "30%" }}>
                   <FlatList
                     data={SPHERES}
@@ -197,6 +242,7 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
             </TouchableOpacity>
           </View>
         </Modal>
+        </View>
       </SafeAreaView>
     </Screen>
   )
@@ -205,6 +251,14 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
 const styles = StyleSheet.create({
   text: {
     fontSize: 20,
+  },
+  head: {
+    fontSize: 20,
+    marginTop: 20
+  },
+  categories: {
+    fontSize: 20,
+    translateY: -20
   },
   container: {
     flex: 1,
@@ -233,9 +287,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   types: {
-    // flex: 1,
-    // justifyItems: 'center',
-    height: "20%",
+    flex: 1,
+    justifyItems: 'center',
+    height: "10%",
   },
   button: {
     borderRadius: 20,
@@ -257,6 +311,10 @@ const styles = StyleSheet.create({
     width: 138,
     height: 136,
     color: "#fff",
+  },
+  bbutton: {
+    backgroundColor:"#841584",
+
   },
   note: {
     color: "#fff",
