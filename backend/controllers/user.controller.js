@@ -1,4 +1,5 @@
 const {firestore} = require('./firestore.controller');
+const {mongo} = require('./mongo.controller');
 
 async function get(user_id) {
   const doc = firestore.collection("users").doc(`${user_id}`);
