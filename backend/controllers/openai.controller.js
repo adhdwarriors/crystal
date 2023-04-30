@@ -30,3 +30,17 @@ async function getBestMatch(note) {
 }
 
 exports.getBestMatch = getBestMatch;
+
+const SUMMARY_QUESTION = 'Please summarize the following text excerpt in 8 words or less.';
+async function summarize(text) {
+  console.log("Summarizing text...")
+  console.log("Text: " + text)
+  ``
+  const completion = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt: `${MAIN_QUESTION}\n${text}`,
+  });
+  return completion.data.choices[0].text;
+}
+
+exports.summarize = summarize;

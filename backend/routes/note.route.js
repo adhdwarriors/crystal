@@ -193,4 +193,42 @@ router.post('/delete', (req, res) => {
         });
 });
 
+const summarize_schema = Joi.object().keys({
+    text: Joi.string().required(),
+});
+
+router.post('/summarize', (req, res) => {
+    console.log('POST /note/summarize');
+
+    const {error, value} = summarize_schema.validate(req.body);
+
+    if (error) {
+        res.writeHead(400, headers.JSON);
+        res.end(JSON.stringify(validation_error_response));
+        return;
+    }
+    if (false) {
+        res.writeHead(401, headers.JSON);
+        res.end(JSON.stringify(unauthorized_response));
+        return;
+    }
+
+    openai.summarize(value.text)
+        .then(result => {
+            // The request was successful
+            const success_response = {
+                response: 200,
+                summary: result
+            };
+            res.writeHead(200, headers.JSON);
+            res.end(JSON.stringify(success_response));
+        })
+        .catch(error => {
+            // An error occurred
+            console.log(error);
+            res.writeHead(500, headers.JSON);
+            res.end(JSON.stringify(internal_error_response));
+        });
+});
+
 module.exports = router;
