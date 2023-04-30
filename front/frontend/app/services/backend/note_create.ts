@@ -1,4 +1,4 @@
-const URL = 'http:172.104.196.152';
+const URL = 'http://172.104.196.152:3000/note/create';
 
 export const createNote = (note, user_id) => {
     // Use fetch to create GET and POST requests
