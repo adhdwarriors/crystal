@@ -14,11 +14,11 @@ const internal_error_response = {response: 500, error: 'Internal error occurred.
 // POST /create
 
 const create_schema = Joi.object().keys({
-    title: Joi.string().required(),
-    content: Joi.string().required(),
-    user_id: Joi.number().required(),
     sphere_id: Joi.number().required(),
-    type_id: Joi.number().required()
+    title: Joi.string().required(),
+    desc: Joi.string().required(),
+    type_id: Joi.number().required(),
+    user_id: Joi.number().required(),
 })
 
 router.post('/create', (req, res) => {
@@ -40,12 +40,15 @@ router.post('/create', (req, res) => {
 
     const note = {
         id: crypto.randomUUID(),
+        sphere_id: value.sphere_id,
         title: value.title,
-        content: value.content,
-        time: Date.now()
+        desc: value.desc,
+        type_id: value.type_id,
+        time: Date.now(),
+        user_id: value.user_id
     };
 
-    note_controller.create(note, value.user_id)
+    note_controller.create(note)
         .then(() => {
             // The request was successful
             const success_response = {
@@ -67,11 +70,11 @@ router.post('/create', (req, res) => {
 
 const edit_schema = Joi.object().keys({
     note_uuid: Joi.string().required(),
-    title: Joi.string().required(),
-    content: Joi.string().required(),
-    user_id: Joi.number().required(),
     sphere_id: Joi.number().required(),
-    type_id: Joi.number().required()
+    title: Joi.string().required(),
+    desc: Joi.string().required(),
+    type_id: Joi.number().required(),
+    user_id: Joi.number().required(),
 })
 
 router.post('/edit', (req, res) => {
@@ -93,18 +96,20 @@ router.post('/edit', (req, res) => {
 
     const note = {
         id: value.note_uuid,
+        sphere_id: value.sphere_id,
         title: value.title,
-        content: value.content,
-        time: Date.now()
+        desc: value.desc,
+        type_id: value.type_id,
+        time: Date.now(),
+        user_id: value.user_id
     };
 
-    note_controller.edit(note, value.user_id)
+    note_controller.edit(note)
         .then(() => {
             // The request was successful
             const success_response = {
                 response: 200,
                 note: note,
-                user_id: value.user_id
             };
             res.writeHead(200, headers.JSON);
             res.end(JSON.stringify(success_response));
