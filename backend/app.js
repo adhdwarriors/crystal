@@ -17,6 +17,7 @@ const usersRouter = require('./routes/users.route');
 const authRouter = require('./routes/auth.route');
 const noteRouter = require('./routes/note.route');
 const userRouter = require('./routes/user.route');
+const sphereRouter = require('./routes/sphere.route');
 
 const app = express();
 app.use(session({

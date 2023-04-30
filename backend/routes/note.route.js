@@ -5,6 +5,8 @@ const headers = require('../scripts/headers.script');
 const crypto = require('crypto');
 
 const note_controller = require('../controllers/note.controller');
+const openai = require('../controllers/openai.controller');
+const {getSphereIdOf} = require("../controllers/sphere.controller");
 
 const validation_error_response = {response: 400, error: 'Invalid request.'};
 const unauthorized_response = {response: 401, error: 'This key is invalid or expired. Are you logged in?'}
@@ -14,7 +16,7 @@ const internal_error_response = {response: 500, error: 'Internal error occurred.
 // POST /create
 
 const create_schema = Joi.object().keys({
-    sphere_id: Joi.number().required(),
+    sphere_id: Joi.number().optional(),
     title: Joi.string().required(),
     desc: Joi.string().required(),
     type_id: Joi.number().required(),
@@ -38,9 +40,39 @@ router.post('/create', (req, res) => {
         return;
     }
 
+    let sphere_id;
+    if (value.sphere_id) {
+        sphere_id = value.sphere_id;
+        finishCreate(value, sphere_id, res);
+    } else {
+        openai.getBestMatch({title: value.title, desc: value.desc})
+          .then(result => {
+              const sphere_title = result.trim();
+              getSphereIdOf(sphere_title)
+                .then(id => {
+                    sphere_id = id;
+                    finishCreate(value, sphere_id, res);
+                })
+                .catch(error => {
+                    // An error occurred
+                    console.log(error);
+                    res.writeHead(500, headers.JSON);
+                    res.end(JSON.stringify(internal_error_response));
+                })
+          })
+          .catch(error => {
+              // An error occurred
+              console.log(error);
+              res.writeHead(500, headers.JSON);
+              res.end(JSON.stringify(internal_error_response));
+          });
+    }
+});
+
+function finishCreate(value, sphere_id, res) {
     const note = {
         id: crypto.randomUUID(),
-        sphere_id: value.sphere_id,
+        sphere_id: sphere_id,
         title: value.title,
         desc: value.desc,
         type_id: value.type_id,
@@ -49,24 +81,23 @@ router.post('/create', (req, res) => {
     };
 
     note_controller.create(note)
-        .then(() => {
-            // The request was successful
-            const success_response = {
-                response: 200,
-                note: note,
-                user_id: value.user_id
-            };
-            res.writeHead(200, headers.JSON);
-            res.end(JSON.stringify(success_response));
-        })
-        .catch(error => {
-            // An error occurred
-            console.log(error);
-            res.writeHead(500, headers.JSON);
-            res.end(JSON.stringify(internal_error_response));
-        });
-});
-
+      .then(() => {
+          // The request was successful
+          const success_response = {
+              response: 200,
+              note: note,
+              user_id: value.user_id
+          };
+          res.writeHead(200, headers.JSON);
+          res.end(JSON.stringify(success_response));
+      })
+      .catch(error => {
+          // An error occurred
+          console.log(error);
+          res.writeHead(500, headers.JSON);
+          res.end(JSON.stringify(internal_error_response));
+      });
+}
 
 const edit_schema = Joi.object().keys({
     note_uuid: Joi.string().required(),
