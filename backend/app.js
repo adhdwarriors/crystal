@@ -1,6 +1,9 @@
 // .env
 require('dotenv').config();
 
+// Initialize mongo connection - close application if no connection string specified
+if (!require('./controllers/mongo.controller').mongo()) process.exit(1);
+
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');

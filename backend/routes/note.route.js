@@ -44,8 +44,7 @@ router.post('/create', (req, res) => {
     };
 
     note_controller.create(note, value.user_id)
-        .then(result => {
-            console.log(result);
+        .then(() => {
             // The request was successful
             const success_response = {
                 response: 200,
