@@ -15,7 +15,8 @@ const get_schema = Joi.object().keys({
 });
 
 router.get('/', (req, res) => {
-  console.log('GET /user')
+  console.log('GET /user');
+  console.dir(req.params);
 
   const { error, value } = get_schema.validate(req.params);
   if (error) {
