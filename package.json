@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@google-cloud/firestore": "^6.5.0"
+    "@google-cloud/firestore": "^6.5.0",
+    "joi": "^17.9.2"
   }
 }
