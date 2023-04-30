@@ -31,13 +31,13 @@ async function getBestMatch(note) {
 
 exports.getBestMatch = getBestMatch;
 
-const SUMMARY_QUESTION = 'Please summarize the following text excerpt as a task or focus in 5-8 words.';
+const SUMMARY_QUESTION = 'Please summarize the following text excerpt as a task or focus in 5-8 words:';
 async function summarize(text) {
   console.log("Summarizing text...")
   console.log("Text: " + text)
   const completion = await openai.createCompletion({
     model: "text-davinci-003",
-    prompt: `${MAIN_QUESTION}\n${text}`,
+    prompt: `${SUMMARY_QUESTION}\n${text}`,
   });
   return completion.data.choices[0].text;
 }
