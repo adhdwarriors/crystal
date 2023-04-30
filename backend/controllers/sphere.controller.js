@@ -18,6 +18,7 @@ exports.getIndex = getIndex
 async function getSphereIdOf(title) {
   const result = await mongo().db('whatsgood').collection('spheres')
     .findOne({title: {$regex: new RegExp(title, 'i')}});
+  if (!result) return undefined;
   return result.id;
 }
 

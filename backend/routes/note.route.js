@@ -51,6 +51,8 @@ router.post('/create', (req, res) => {
               getSphereIdOf(sphere_title)
                 .then(id => {
                     sphere_id = id;
+                    if (!sphere_id) sphere_id = 1;
+                    console.log('FALLBACK SPHERE ID: ' + sphere_id);
                     finishCreate(value, sphere_id, res);
                 })
                 .catch(error => {
