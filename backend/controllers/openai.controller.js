@@ -1,8 +1,10 @@
+const {mongo} = require('./mongo.controller');
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
+const sphere_controller = require('./sphere.controller');
 
 async function doPrompt(prompt) {
   const completion = await openai.createCompletion({
@@ -15,7 +17,9 @@ async function doPrompt(prompt) {
 const MAIN_QUESTION = 'Which topic amongst these does the following text ' +
   'excerpt best match? Please answer in one lowercase word.';
 
-async function getBestMatch(sphere_names, note) {
+async function getBestMatch(note) {
+  const sphere_names = await sphere_controller.getSpheres();
+  console.log(sphere_names);
   if (sphere_names.length === 0) return undefined; // We cannot match a single sphere name
 
   const completion = await openai.createCompletion({
