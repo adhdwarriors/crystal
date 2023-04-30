@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
 const headers = require('../scripts/headers.script');
+const crypto = require('crypto');
 
 const note_controller = require('../controllers/note.controller');
 
