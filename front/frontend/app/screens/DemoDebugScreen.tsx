@@ -19,11 +19,13 @@ import { DemoTabScreenProps } from "../navigators/DemoNavigator"
 import { colors, spacing } from "../theme"
 import { isRTL } from "../i18n"
 import { useStores } from "../models"
-import { Thought, SPHERES, THOUGHTS, TYPES, DefaultThought } from "app/Types"
+import { Thought, THOUGHTS, SPHERES, TYPES, DefaultThought } from "app/Types"
 import { Picker } from "@react-native-picker/picker"
 import ThoughtCard from "../components/ThoughtCard"
 import ThoughtCardMag from "../components/ThoughtCardMag"
 import { SelectMultipleButton } from "react-native-selectmultiple-button"
+import useNotes, { filterOnTopics, filterOnTypes } from "../services/backend/userNotes";
+const GET_URL = 'http://172.104.196.152:3000/user?user_id=1&token=blah'
 
 export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function DemoDebugScreen(
   _props,
@@ -34,7 +36,9 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
 
   const usingHermes = typeof HermesInternal === "object" && HermesInternal !== null
 
-  const [mode, setMode] = useState<number>(0)
+  // const THOUGHTS = useNotes(0); // pass in user id  
+  const [thoughts, setThoughts] = useState<any>([{body: ""}]);
+  const [mode, setMode] = useState<number>(0);
   const [selThought, setSelThought] = useState<number>(0)
   const [thought, setThought] = useState<Thought>(DefaultThought)
   const [lifeSpheres, setLifeSpheres] = useState<boolean[]>(
@@ -70,11 +74,24 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
     setSelThought(id)
     setMode(2)
   }
+  console.log(thoughts);
+
+  useEffect(() => {
+    fetch(GET_URL, {method: 'GET'})
+    .then(response => response.json())
+    .then(response => 
+      {
+        setThoughts(response.notes);
+      })
+      .catch(error => console.log("ERRORRRRR", error))
+    }, [])
 
   return (
     <Screen preset="scroll" style={styles.container} safeAreaEdges={["top"]}>
       <SafeAreaView style={styles.container}>
         {/* <Modal visible={true}> */}
+        {console.log("THOUGHTS:", thoughts)}
+        <Text>{thoughts ? thoughts[0].body : "Hello!"}</Text>
         <FlatList
           style={styles.noteList}
           data={THOUGHTS}
@@ -112,21 +129,6 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
                   onChangeText={(text) => setThought({ ...thought, desc: text })}
                   multiline={true}
                 />
-{/* 
-                <View style={{ height: "45%" }}>
-                  <Text style={{ marginTop: "5%" }}>Type</Text>
-                  <Picker
-                    selectedValue={thought.type}
-                    onValueChange={(val: any, index: number) => {
-                      console.log("INDEX:", index)
-                      setThought({ ...thought, type: val })
-                    }}
-                  >
-                    {TYPES.map((type, index) => (
-                      <Picker.Item key={index} label={type.title} value={type.title} />
-                    ))}
-                  </Picker>
-                </View> */}
                 <View style={{ height: "30%" }}>
                   <FlatList
                     data={SPHERES}

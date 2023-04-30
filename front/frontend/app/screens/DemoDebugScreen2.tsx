@@ -98,12 +98,12 @@
                   
 //                 </View>
                 
-//                 <Button
-//                 onPress={insertThought}
-//                 title="Add Thought"
-//                 color="#841584"
-//                 accessibilityLabel="Learn more about this purple button"
-//               />
+              //   <Button
+              //   onPress={insertThought}
+              //   title="Add Thought"
+              //   color="#841584"
+              //   accessibilityLabel="Learn more about this purple button"
+              // />
 //               </View>
 //             </View>
 //           </View>

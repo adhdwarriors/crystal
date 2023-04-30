@@ -1,5 +1,15 @@
 const URL = 'http://172.104.196.152:3000/note/create';
+const GET_URL = 'http://172.104.196.152:3000/user?user_id=1&token=blah'
+export const getNotes = (user_id) => {
+    fetch(GET_URL).then(response => response.json())
+    .then(response => {
+        console.log("RESPONSE!!")
+        console.log(response)
+        return response.notes;
+    }).catch(error => console.log("ERRORRRRRR:", error))
+}
 
+// PASS IN note = {title, content, user_id}
 export const createNote = (note, user_id) => {
     // Use fetch to create GET and POST requests
     fetch(URL, {
