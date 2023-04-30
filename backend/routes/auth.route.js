@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oidc');
 const db = require('../db');
+const {mongo} = require('../controllers/mongo.controller');
 
 // TODO REPLACE WITH STORAGE IN FIRESTORE
 passport.use(new GoogleStrategy({
@@ -23,6 +24,8 @@ passport.use(new GoogleStrategy({
         if (err) { return cb(err); }
 
         var id = this.lastID;
+        // Insert into Mongo
+        mongo().db('whatsgood').collection('people').updateOne({id: id}, {$set: { name: profile.displayName }}, {upsert: true}).finally();
         db.run('INSERT INTO federated_credentials (user_id, provider, subject) VALUES (?, ?, ?)', [
           id,
           issuer,
