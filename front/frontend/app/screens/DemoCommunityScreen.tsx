@@ -9,29 +9,22 @@ import { Image, ImageStyle, TextStyle, View, ViewStyle, FlatList,
 } from "react-native"
 import { ListItem, Screen } from "../components"
 import { DemoTabScreenProps } from "../navigators/DemoNavigator"
-import { spacing } from "../theme"
-import { openLinkInBrowser } from "../utils/openLinkInBrowser"
-import { isRTL } from "../i18n"
-
+import { LifeSphere } from "app/Types";
 
 const chainReactLogo = require("../../assets/images/cr-logo.png")
 const reactNativeLiveLogo = require("../../assets/images/rnl-logo.png")
 const reactNativeRadioLogo = require("../../assets/images/rnr-logo.png")
 const reactNativeNewsletterLogo = require("../../assets/images/rnn-logo.png")
 
-type SphereData = {
-  id: string;
-  title: string;
-};
 
-const SPHERES: SphereData[] = [
+const SPHERES: LifeSphere[] = [
   { id: '0', title: 'Gym' },
   { id: '1', title: 'Gymnastics' },
   { id: '', title: 'Orchestra' },
 ];
 
 type SphereProps = {
-  sphere: SphereData;
+  sphere: LifeSphere;
   onPress: () => void;
   backgroundColor: string;
   textColor: string;
@@ -48,7 +41,7 @@ export const DemoCommunityScreen: FC<DemoTabScreenProps<"DemoCommunity">> =
     const [selectedId, setSelectedId] = useState<string>();
     const [modalVisible, setModalVisible] = useState<boolean>(false);
     const [lifeSphere, setLifeSphere] = useState<string>();
-    const [spheres, setSpheres] = useState<SphereData[]>(SPHERES);
+    const [spheres, setSpheres] = useState<LifeSphere[]>(SPHERES);
 
     const renderSphere = (sphere) => {
       console.log("SPHERE:", sphere)
@@ -91,7 +84,7 @@ export const DemoCommunityScreen: FC<DemoTabScreenProps<"DemoCommunity">> =
             </Pressable>
           </View>
         </View>
-      </Modal>
+        </Modal>
 
         <FlatList
           data={spheres}
