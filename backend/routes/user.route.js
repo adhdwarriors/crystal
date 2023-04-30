@@ -34,10 +34,10 @@ router.get('/', (req, res) => {
 
   user_controller.get(value.user_id)
     .then(result => {
-      console.log(result);
+      console.log(result.data());
       const success_response = {
         response: 200,
-        user: result,
+        user: result.data(),
         time: Date.now()
       };
       res.writeHead(200, headers.JSON);
