@@ -34,28 +34,66 @@ router.post('/create', (req, res) => {
         return;
     }
 
-    const sphere = {
-        title: value.title,
-        id: sphere_controller.getIndex()
-    };
+    sphere_controller.getIndex()
+        .then(id => {
+            const sphere = {
+                title: value.title,
+                id: id + 1
+            };
 
-    sphere_controller.create(sphere)
-        .then(() => {
-            // The request was successful
+            sphere_controller.create(sphere)
+                .then(() => {
+                    // The request was successful
+                    const success_response = {
+                        response: 200,
+                        sphere: sphere,
+                    };
+                    res.writeHead(200, headers.JSON);
+                    res.end(JSON.stringify(success_response));
+                })
+                .catch(error => {
+                    // An error occurred
+                    console.log(error);
+                    res.writeHead(500, headers.JSON);
+                    res.end(JSON.stringify(internal_error_response));
+                });
+        })
+        .catch(error => {
+            console.log(error);
+            res.writeHead(500, headers.JSON);
+            res.end(JSON.stringify(internal_error_response));
+        })
+});
+
+router.get('/', (req, res) => {
+    console.log('GET /sphere');
+    console.dir(req.query);
+
+
+    // Check if the token is authorized
+    if (false) {
+        res.writeHead(401, headers.JSON);
+        res.end(JSON.stringify(unauthorized_response));
+        return;
+    }
+
+    sphere_controller.getSpheres()
+        .then(result => {
             const success_response = {
                 response: 200,
-                sphere: sphere,
+                spheres: result,
+                time: Date.now()
             };
             res.writeHead(200, headers.JSON);
             res.end(JSON.stringify(success_response));
         })
         .catch(error => {
-            // An error occurred
             console.log(error);
             res.writeHead(500, headers.JSON);
             res.end(JSON.stringify(internal_error_response));
         });
 });
+
 
 
 /* GET users listing. */
