@@ -68,7 +68,7 @@ export const DemoCommunityScreen: FC<DemoTabScreenProps<"DemoCommunity">> =
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
             <TextField
-        label="Supports Multiline"
+        label="Brain Dump Break"
         helper="30 seconds to go crazy - write whatever's on your mind!"
         placeholder="Eiusmod exercitation mollit elit magna occaecat eiusmod Lorem minim veniam. Laborum Lorem velit velit minim irure ad in ut adipisicing consectetur."
         value={rest}
