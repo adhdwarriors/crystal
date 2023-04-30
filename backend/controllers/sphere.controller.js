@@ -8,7 +8,7 @@ async function create(sphere) {
 }
 
 async function getIndex() {
-    return await mongo().db('whatsgood').collection('spheres').count();
+    return await mongo().db('whatsgood').collection('spheres').estimatedDocumentCount()
 }
 
 
