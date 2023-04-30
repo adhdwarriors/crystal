@@ -27,6 +27,8 @@ import { SelectMultipleButton } from "react-native-selectmultiple-button"
 import useNotes, { filterOnTopics, filterOnTypes } from "../services/backend/userNotes"
 const GET_URL = "http://172.104.196.152:3000/user?user_id=1&token=blah"
 const URL = "http://172.104.196.152:3000/note/create"
+const SPHERES_GET_URL = "http://172.104.196.152:3000/sphere"; 
+
 import { DemoUseCase } from "../screens/DemoShowroomScreen/DemoUseCase"
 
 export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function DemoDebugScreen(
@@ -51,27 +53,35 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
   const toggleSphere = (item) => {
     setLifeSpheres(lifeSpheres.map((type, index) => index == item.id ? !lifeSpheres[index] : lifeSpheres[index]))
   }
-
+  type Sphere = { id: number; title: string}
 
   // const THOUGHTS = useNotes(0); // pass in user id
   const [thoughts, setThoughts] = useState<any>([{ body: "" }])
   const [mode, setMode] = useState<number>(0)
   const [selThought, setSelThought] = useState<number>(0)
   const [thought, setThought] = useState<Thought>(DefaultThought)
+  const [spheres, setSpheres] = useState<Sphere[]>([{title: "Gym", id: 0}, {title: "Orchestra", id: 1} ]);
   const [lifeSpheres, setLifeSpheres] = useState<boolean[]>(
-    SPHERES.map((sphere, id) => {
+    spheres.map((sphere, id) => {
       return true
     }),
   )
   const [types, setTypes] = useState<boolean[]>(
-    TYPES.map((sphere, id) => {
+    TYPES.map((type, id) => {
       return true
     }),
   )
   const [editedThought, setEditedThought] = useState<Thought>(THOUGHTS[selThought])
-
   const [title, setTitle] = useState<string>(THOUGHTS[selThought].title)
   const [desc, setDesc] = useState<string>(THOUGHTS[selThought].desc)
+
+  const spheresCallback = async () => {
+    fetch(SPHERES_GET_URL, { method: "GET" })
+    .then(res => res.json())
+    .then((res) => {
+      setSpheres(res.spheres.map((sphere, index) =>
+       {return {title: sphere, id: index}}))})
+  };
 
   const insertThought = () => {
     const { id, title, desc } = thought
@@ -129,10 +139,10 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
         })
         setThoughts(
           thoughts.filter((t, index) => {
-            console.log("T:", t, "life spheres", lifeSpheres, "types", types)
             return lifeSpheres[t.sphere_id] && types[t.type_id]
           }),
-        )
+        );
+        console.log(SPHERES)
       })
       .catch((error) => console.log("ERRORRRRR", error))
   }, [lifeSpheres, types])
@@ -147,16 +157,16 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
               style={$flatListStyle}
               renderItem={({ item, index }) => (
                 <FlatList
-                  data={index == 0 ? TYPES : SPHERES}
+                  data={index == 0 ? TYPES : TYPES}
                   style={styles.typesList}
                   numColumns={4}
                   keyExtractor={(item) => {
                     return item.title
                   }}
-                  renderItem={({item: item}) => (
+                  renderItem={({item}) => (
                     <SelectMultipleButton
                       multiple={true}
-                      value={item.title}
+                      value={item}
                       key={item.id}
                       selected={index == 0 ? types[item.id] : lifeSpheres[item.id]}
                       singleTap={index == 0 ? ((valTap) => { toggleType(item)}) : ((valTap) => { toggleSphere(item)})}
@@ -184,7 +194,7 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
             onPress={() => {
               setMode(1)
               setLifeSpheres(
-                SPHERES.map((sphere) => {
+                spheres.map((sphere) => {
                   return true
                 }),
               )
@@ -196,6 +206,11 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
             }}
             title="Add Thought"
             // style={styles.bbutton}
+            accessibilityLabel="Learn more about this purple button"
+          />
+          <Button
+            onPress={spheresCallback}
+            title="Spheres"
             accessibilityLabel="Learn more about this purple button"
           />
           <Modal visible={mode == 1}>
@@ -243,21 +258,21 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
                   <Text style={styles.categories}>Categories</Text>
                   <View style={{ height: "30%" }}>
                     <FlatList
-                      data={SPHERES}
+                      data={spheres}
                       numColumns={3}
                       keyExtractor={(item, index) => {
                         return item.title
                       }}
-                      renderItem={({ item }) => (
+                      renderItem={({ item, index }) => (
                         <SelectMultipleButton
                           multiple={true}
-                          value={item.title}
+                          value={item}
                           key={item.id}
-                          selected={lifeSpheres[item.id]}
+                          selected={lifeSpheres[index]}
                           singleTap={(valTap) => {
                             setLifeSpheres(
                               lifeSpheres.map((sphere, index) =>
-                                index == item.id ? !lifeSpheres[index] : lifeSpheres[index],
+                                index == index ? !lifeSpheres[index] : lifeSpheres[index],
                               ),
                             )
                           }}

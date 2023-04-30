@@ -17,7 +17,7 @@ export const LifeSphereCard =
                 style={[styles.card,{backgroundColor: "#121212"}]}>
 
                 {/* <Text style={styles.create}>{this.state.createdAt.getDate()} {this.state.monthList[this.state.createdAt.getMonth()]}</Text> */}
-                <Text numberOfLines={1} style={styles.title}>{_props.data.title}</Text>
+                <Text numberOfLines={1} style={styles.title}>{_props.data}</Text>
                 {/* <Text numberOfLines={4} style={styles.note}>{_props.data.desc}</Text> */}
             
             </TouchableOpacity>
