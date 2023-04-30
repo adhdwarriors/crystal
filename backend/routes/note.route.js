@@ -11,31 +11,6 @@ const unauthorized_response = { response: 401, error: 'This key is invalid or ex
 const internal_error_response = { response: 500, error: 'Internal error occurred.' };
 
 
-// GET /
-const get_schema = Joi.object().keys({
-    user_id: Joi.number().required(),
-    token: Joi.string().required()
-});
-
-router.get('/', (req, res) => {
-    console.log('GET /note')
-
-    const { error, value } = get_schema.validate(req.params);
-    if (error) {
-        res.writeHead(400, headers.JSON);
-        res.end(JSON.stringify(validation_error_response));
-        return;
-    }
-
-    // Check if the token is authorized
-    if (false) {
-        res.writeHead(401, headers.JSON);
-        res.end(JSON.stringify(unauthorized_response));
-        return;
-    }
-
-});
-
 // POST /create
 
 const create_schema = Joi.object().keys({

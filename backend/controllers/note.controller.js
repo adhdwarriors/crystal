@@ -15,10 +15,4 @@ async function create(note, user_id) {
     });
 }
 
-async function get(user_id) {
-    const doc = firestore.collection("users").doc(`${user_id}`)
-    return await doc.get();
-}
-
-
 exports.create = create;
