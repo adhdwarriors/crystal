@@ -12,3 +12,5 @@ app.use('/', require('./routes/index.route'));
 
 app.listen(PORT);
 console.log(`Server running on port ${PORT}`);
+
+require('./controllers/openai.controller').test('This is a test!').finally();
