@@ -35,7 +35,7 @@ router.post('/create', (req, res) => {
     }
 
     const sphere = {
-        name: value.title,
+        title: value.title,
         id: sphere_controller.getIndex()
     };
 
@@ -56,5 +56,10 @@ router.post('/create', (req, res) => {
             res.end(JSON.stringify(internal_error_response));
         });
 });
+
+
+/* GET users listing. */
+
+
 
 module.exports = router;
