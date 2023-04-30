@@ -12,8 +12,8 @@ passport.deserializeUser((user, done) => {
 })
 
 passport.use(new GoogleStrategy({
-  clientID: "", // Add your clientID
-  clientSecret: "", // Add the secret here
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: '/auth/google/callback'
 }, (accessToken, refreshToken, profile, done) => {
   done(null, profile, accessToken );
@@ -25,7 +25,7 @@ router.get('/google', passport.authenticate('google', {
 }));
 
 // Google Oauth2 callback url
-router.get('/callback', passport.authenticate('google'), (req, res, next) => {
-  res.redirect("msrm42app://msrm42app.io?id=" + req.user.id);
+router.get('/google/callback', passport.authenticate('google'), (req, res, next) => {
+  res.redirect("http://localhost:3000/users?id=" + req.user.id);
 });
 module.exports = router;
