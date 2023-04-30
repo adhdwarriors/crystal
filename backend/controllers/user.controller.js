@@ -5,4 +5,11 @@ async function get(user_id) {
   return await doc.get();
 }
 
-exports.get = get;
+async function getMongo(user_id) {
+  const user = await mongo().db('whatsgood').collection('people').findOne({id: user_id});
+  const notes = await mongo().db('whatsgood').collection('notes').find({id: {$in: user.notes}}).toArray();
+
+  return {user, notes};
+}
+
+exports.get = getMongo;
