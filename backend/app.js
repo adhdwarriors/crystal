@@ -7,6 +7,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session');
+var SQLiteStore = require('connect-sqlite3')(session);
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -17,7 +18,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: undefined
+  store: new SQLiteStore({ db: 'sessions.db', dir: './var/db' })
 }));
 const passport = require('passport');
 // Initialize passport

@@ -131,3 +131,5 @@ dist
 
 # Authentication
 auth/
+
+var/
