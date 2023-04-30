@@ -35,7 +35,6 @@ const SUMMARY_QUESTION = 'Please summarize the following text excerpt in 8 words
 async function summarize(text) {
   console.log("Summarizing text...")
   console.log("Text: " + text)
-  ``
   const completion = await openai.createCompletion({
     model: "text-davinci-003",
     prompt: `${MAIN_QUESTION}\n${text}`,
