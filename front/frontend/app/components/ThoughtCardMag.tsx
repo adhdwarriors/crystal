@@ -1,5 +1,5 @@
-import React, {FC, useState, Component} from 'react';
-import {TouchableOpacity, Text, Alert, StyleSheet} from 'react-native';
+import React, {FC, useState, Component, useEffect} from 'react';
+import {TouchableOpacity, View, Text, Button, TextInput, Alert, Pressable, StyleSheet} from 'react-native';
 
 // import connect to connect with redux store
 // import { connect } from 'react-redux';
@@ -7,26 +7,45 @@ import {TouchableOpacity, Text, Alert, StyleSheet} from 'react-native';
 // import action
 // import { deleteNotes} from '../Public/redux/action/notes';
 
-export const Thought = 
-    function Thought(_props)
+export const ThoughtCardMag = 
+    function ThoughtCardMag(_props)
     {
+        console.log(_props.data);
+        const [title, setTitle] = useState<string>(_props.data.title);
+        const [desc, setDesc] = useState<string>(_props.data.desc);
+        
+        // useEffect(() => {
+        //     _props.editThought();
+        //   }, [_props.editThought, title, desc]);
+
         return (
             <TouchableOpacity
                 onPress={() => {_props.openMod(_props.data.id)}}
-            // onLongPress={()=>{this.deleteHandler(this.props.data)}}
+                // onLongPress={()=>{this.deleteHandler(this.props.data)}}
                 style={[styles.card,{backgroundColor: "#121212"}]}>
 
                 {/* <Text style={styles.create}>{this.state.createdAt.getDate()} {this.state.monthList[this.state.createdAt.getMonth()]}</Text> */}
-                <Text numberOfLines={1} style={styles.title}>{_props.data.title}</Text>
-                <Text numberOfLines={1} style={styles.category}>{_props.data.category}</Text>
-                <Text numberOfLines={4} style={styles.note}>{_props.data.desc}</Text>
-            
+                <TextInput
+                    style={styles.note}
+                    onChangeText={setTitle}
+                    value={title}
+                    numberOfLines={1}
+                />
+                <TextInput
+                    style={styles.note}
+                    onChangeText={setDesc}
+                    value={desc}
+                    numberOfLines={4}
+                />
+                <View>
+                
+                </View>
             </TouchableOpacity>
         )
     }
 // connect with redux,first param is map and second is component
 // export default connect(mapStateToProps)(Card);
-export default Thought;
+export default ThoughtCardMag;
 
 const styles = StyleSheet.create({
     card: {
@@ -45,6 +64,11 @@ const styles = StyleSheet.create({
         height:136,
         color: '#fff',
     },
+    button: {
+        borderRadius: 20,
+        padding: 10,
+        elevation: 2,
+      },
     create:{
         fontSize:11,
         alignSelf:'flex-end',
@@ -67,7 +91,7 @@ const styles = StyleSheet.create({
     },
     note:{
         color: '#fff',
-        fontSize:12,
+        fontSize:16,
         top:10,
         left:10
     }

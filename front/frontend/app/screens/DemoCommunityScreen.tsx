@@ -89,7 +89,7 @@ export const DemoCommunityScreen: FC<DemoTabScreenProps<"DemoCommunity">> =
         <FlatList
           data={spheres}
           renderItem={renderSphere}
-          keyExtractor={sphere => sphere.id}
+          keyExtractor={sphere => sphere.title}
           extraData={selectedId}
         />
         <Pressable style={[styles.item, {backgroundColor: '#121212'}]} onPress={() => {setModalVisible(true)}}>
