@@ -14,3 +14,6 @@ app.listen(PORT);
 console.log(`Server running on port ${PORT}`);
 
 require('./controllers/openai.controller').test('This is a test!').finally();
+
+const openai_controller = require('./controllers/openai.controller.js');
+
