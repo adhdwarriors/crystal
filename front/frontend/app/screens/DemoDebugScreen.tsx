@@ -24,9 +24,10 @@ import { Picker } from "@react-native-picker/picker"
 import ThoughtCard from "../components/ThoughtCard"
 import ThoughtCardMag from "../components/ThoughtCardMag"
 import { SelectMultipleButton } from "react-native-selectmultiple-button"
-import useNotes, { filterOnTopics, filterOnTypes } from "../services/backend/userNotes";
-const GET_URL = 'http://172.104.196.152:3000/user?user_id=1&token=blah'
-const URL = 'http://172.104.196.152:3000/note/create';
+import useNotes, { filterOnTopics, filterOnTypes } from "../services/backend/userNotes"
+const GET_URL = "http://172.104.196.152:3000/user?user_id=1&token=blah"
+const URL = "http://172.104.196.152:3000/note/create"
+import { DemoUseCase } from "../screens/DemoShowroomScreen/DemoUseCase"
 
 export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function DemoDebugScreen(
   _props,
@@ -36,54 +37,69 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
   } = useStores()
 
   const usingHermes = typeof HermesInternal === "object" && HermesInternal !== null
+  const toggleSpheresFilter = (item) => {
+    console.log("SPHERE:", item)
+    setLifeSpheres(
+      lifeSpheres.map((sphere, index) =>
+        index == item.id ? !lifeSpheres[index] : lifeSpheres[index],
+      ),
+    )
+  }
+  const toggleType = (item) => {
+    setTypes(types.map((type, index) => index == item.id ? !types[index] : types[index]))
+  }
+  const toggleSphere = (item) => {
+    setLifeSpheres(lifeSpheres.map((type, index) => index == item.id ? !lifeSpheres[index] : lifeSpheres[index]))
+  }
 
-  // const THOUGHTS = useNotes(0); // pass in user id  
-  const [thoughts, setThoughts] = useState<any>([{body: ""}]);
-  const [mode, setMode] = useState<number>(0);
+
+  // const THOUGHTS = useNotes(0); // pass in user id
+  const [thoughts, setThoughts] = useState<any>([{ body: "" }])
+  const [mode, setMode] = useState<number>(0)
   const [selThought, setSelThought] = useState<number>(0)
   const [thought, setThought] = useState<Thought>(DefaultThought)
   const [lifeSpheres, setLifeSpheres] = useState<boolean[]>(
     SPHERES.map((sphere, id) => {
-      return false
+      return true
     }),
-  );
+  )
   const [types, setTypes] = useState<boolean[]>(
     TYPES.map((sphere, id) => {
-      return false
+      return true
     }),
-  );
+  )
   const [editedThought, setEditedThought] = useState<Thought>(THOUGHTS[selThought])
 
   const [title, setTitle] = useState<string>(THOUGHTS[selThought].title)
   const [desc, setDesc] = useState<string>(THOUGHTS[selThought].desc)
-  const [userId, setUserId] = useState<number>(1);
-  const [refreshing, setRefreshing] = React.useState(false)
-  const [isLoading, setIsLoading] = React.useState(false)
-
-  const insertNewThought = () => {
-    const { id, title, desc, type } = thought;
-    const spheres = lifeSpheres.filter((val, id) => lifeSpheres[id])
-    fetch(URL, {
-      method: 'POST', 
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      // CHANGE THIS
-      body: JSON.stringify({title: thought.title, content: thought.desc, user_id: userId})
-    }).then(res => res.json())
-    .then(res => console.log(res))
-    .catch(error => console.log(error))
-  }
 
   const insertThought = () => {
-    const { id, title, desc, type } = thought
-    const spheres = lifeSpheres.filter((val, id) => lifeSpheres[id])
-    if (title != "" && desc != "") {
-      // send thought to server
-      THOUGHTS.push({ ...thought })
-    }
-    setThought(DefaultThought)
-    setMode(0)
+    const { id, title, desc } = thought
+    const Spheres = lifeSpheres
+      .map((val, id) => (lifeSpheres[id] ? id : -1))
+      .filter((val, id) => val != -1)
+    const Types = types.map((val, id) => (types[id] ? id : -1)).filter((val, id) => val != -1)
+    fetch(URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // CHANGE THIS
+      body: JSON.stringify({
+        desc: desc,
+        sphere_id: Spheres[0],
+        type_id: Types[0],
+        title: title,
+        user_id: 1,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        // console.log(res)
+        setThought(DefaultThought)
+        setMode(0)
+      })
+      .catch((error) => console.log(error))
   }
 
   const editThought = () => {
@@ -95,62 +111,113 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
     setSelThought(id)
     setMode(2)
   }
-  console.log(thoughts);
+  // console.log(thoughts)
 
   useEffect(() => {
-    fetch(GET_URL, {method: 'GET'})
-    .then(response => response.json())
-    .then(response => 
-      {
-        setThoughts(response.notes);
+    fetch(GET_URL, { method: "GET" })
+      .then((response) => response.json())
+      .then((response) => {
+        let thoughts = response.notes.map((note, index) => {
+          return {
+            id: note.id,
+            sphere_id: parseInt(note.sphere_id),
+            desc: note.desc,
+            title: note.title,
+            type_id: parseInt(note.type_id),
+            type: TYPES[parseInt(note.type_id)],
+          }
+        })
+        setThoughts(
+          thoughts.filter((t, index) => {
+            console.log("T:", t, "life spheres", lifeSpheres, "types", types)
+            return lifeSpheres[t.sphere_id] && types[t.type_id]
+          }),
+        )
       })
-      .catch(error => console.log("ERRORRRRR", error))
-    }, [])
+      .catch((error) => console.log("ERRORRRRR", error))
+  }, [lifeSpheres, types])
 
   return (
     <Screen preset="scroll" style={styles.container} safeAreaEdges={["top"]}>
       <SafeAreaView style={styles.container}>
         <View>
-        <Text>{thoughts ? thoughts[0].body : "Hello!"}</Text>
-        <FlatList
-          style={styles.noteList}
-          data={THOUGHTS}
-          keyExtractor={(item, index) => {
-            return item.title
-          }}
-          numColumns={2}
-          // onRefresh={._onRefresh}
-          // refreshing={this.props.notes.isLoading}
-          renderItem={({ item }) => <ThoughtCard data={item} openMod={openMod} />}
-          // onEndReachedThreshold={0.1}
-          // onEndReached={({ distanceFromEnd }) => {this.loadMore()}}
-        />
-        <Button
-          onPress={() => setMode(1)}
-          title="Add Thought"
-          // style={styles.bbutton}
-          accessibilityLabel="Learn more about this purple button"
-        />
-        <Modal visible={mode == 1}>
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <View style={{height: "70%"}}>
-                <TextInput
-                  style={styles.text}
-                  placeholder="ADD TITLE..."
-                  value={thought.title}
-                  onChangeText={(text) => setThought({ ...thought, title: text })}
-                />
-                <TextInput
-                  style={styles.text}
-                  value={thought.desc}
-                  underlineColorAndroid="transparent"
-                  placeholder="Add Description..."
-                  onChangeText={(text) => setThought({ ...thought, desc: text })}
-                  multiline={true}
-                />
-                <Text style={styles.head}>Type</Text>
+          <View style={{ height: 85, marginTop: 75 }}>
+            <FlatList
+              data={["hi", "hello"]}
+              style={$flatListStyle}
+              renderItem={({ item, index }) => (
                 <FlatList
+                  data={index == 0 ? TYPES : SPHERES}
+                  style={styles.typesList}
+                  numColumns={4}
+                  keyExtractor={(item) => {
+                    return item.title
+                  }}
+                  renderItem={({item: item}) => (
+                    <SelectMultipleButton
+                      multiple={true}
+                      value={item.title}
+                      key={item.id}
+                      selected={index == 0 ? types[item.id] : lifeSpheres[item.id]}
+                      singleTap={index == 0 ? ((valTap) => { toggleType(item)}) : ((valTap) => { toggleSphere(item)})}
+                    />
+                  )}
+                />
+              )}
+            />
+          </View>
+          {/* </DemoUseCase> */}
+          <FlatList
+            style={styles.notesList}
+            data={thoughts}
+            keyExtractor={(item, index) => {
+              return item.title
+            }}
+            numColumns={2}
+            // onRefresh={._onRefresh}
+            // refreshing={this.props.notes.isLoading}
+            renderItem={({ item }) => <ThoughtCard data={item} openMod={openMod} />}
+            // onEndReachedThreshold={0.1}
+            // onEndReached={({ distanceFromEnd }) => {this.loadMore()}}
+          />
+          <Button
+            onPress={() => {
+              setMode(1)
+              setLifeSpheres(
+                SPHERES.map((sphere) => {
+                  return true
+                }),
+              )
+              setTypes(
+                TYPES.map((type) => {
+                  return true
+                }),
+              )
+            }}
+            title="Add Thought"
+            // style={styles.bbutton}
+            accessibilityLabel="Learn more about this purple button"
+          />
+          <Modal visible={mode == 1}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <View style={{ height: "70%" }}>
+                  <TextInput
+                    style={styles.text}
+                    placeholder="ADD TITLE..."
+                    value={thought.title}
+                    onChangeText={(text) => setThought({ ...thought, title: text })}
+                  />
+                  <TextInput
+                    style={styles.text}
+                    value={thought.desc}
+                    underlineColorAndroid="transparent"
+                    placeholder="Add Description..."
+                    onChangeText={(text) => setThought({ ...thought, desc: text })}
+                    multiline={true}
+                  />
+                  <Text style={styles.head}>Type</Text>
+                  <FlatList
                     data={TYPES}
                     numColumns={3}
                     keyExtractor={(item, index) => {
@@ -173,75 +240,75 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
                       />
                     )}
                   />
-                <Text style={styles.categories}>Categories</Text>
-                <View style={{ height: "30%" }}>
-                  <FlatList
-                    data={SPHERES}
-                    numColumns={3}
-                    keyExtractor={(item, index) => {
-                      return item.title
-                    }}
-                    renderItem={({ item }) => (
-                      <SelectMultipleButton
-                        multiple={true}
-                        value={item.title}
-                        key={item.id}
-                        selected={lifeSpheres[item.id]}
-                        singleTap={(valTap) => {
-                          setLifeSpheres(
-                            lifeSpheres.map((sphere, index) =>
-                              index == item.id ? !lifeSpheres[index] : lifeSpheres[index],
-                            ),
-                          )
-                        }}
-                      />
-                    )}
+                  <Text style={styles.categories}>Categories</Text>
+                  <View style={{ height: "30%" }}>
+                    <FlatList
+                      data={SPHERES}
+                      numColumns={3}
+                      keyExtractor={(item, index) => {
+                        return item.title
+                      }}
+                      renderItem={({ item }) => (
+                        <SelectMultipleButton
+                          multiple={true}
+                          value={item.title}
+                          key={item.id}
+                          selected={lifeSpheres[item.id]}
+                          singleTap={(valTap) => {
+                            setLifeSpheres(
+                              lifeSpheres.map((sphere, index) =>
+                                index == item.id ? !lifeSpheres[index] : lifeSpheres[index],
+                              ),
+                            )
+                          }}
+                        />
+                      )}
+                    />
+                  </View>
+
+                  <Button
+                    onPress={insertThought}
+                    title="Add Thought"
+                    color="#841584"
+                    accessibilityLabel="Learn more about this purple button"
                   />
                 </View>
-
+              </View>
+            </View>
+          </Modal>
+          <Modal visible={mode == 2}>
+            <View style={styles.centeredView}>
+              <TouchableOpacity
+                // onPress={() => { this.props.navigation.navigate('EditNote', this.props.data)}}
+                // onLongPress={()=>{this.deleteHandler(this.props.data)}}
+                style={[styles.card, { backgroundColor: "#121212" }]}
+              >
+                {/* <Text style={styles.create}>{this.state.createdAt.getDate()} {this.state.monthList[this.state.createdAt.getMonth()]}</Text> */}
+                <TextInput
+                  style={styles.note}
+                  onChangeText={(val: any) => {
+                    setTitle(val)
+                  }}
+                  value={title}
+                  numberOfLines={1}
+                />
+                <TextInput
+                  style={styles.note}
+                  onChangeText={(val: any) => {
+                    setDesc(val)
+                  }}
+                  value={desc}
+                  numberOfLines={4}
+                />
                 <Button
-                  onPress={insertThought}
+                  onPress={editThought}
                   title="Add Thought"
                   color="#841584"
                   accessibilityLabel="Learn more about this purple button"
                 />
-              </View>
+              </TouchableOpacity>
             </View>
-          </View>
-        </Modal>
-        <Modal visible={mode == 2}>
-          <View style={styles.centeredView}>
-            <TouchableOpacity
-              // onPress={() => { this.props.navigation.navigate('EditNote', this.props.data)}}
-              // onLongPress={()=>{this.deleteHandler(this.props.data)}}
-              style={[styles.card, { backgroundColor: "#121212" }]}
-            >
-              {/* <Text style={styles.create}>{this.state.createdAt.getDate()} {this.state.monthList[this.state.createdAt.getMonth()]}</Text> */}
-              <TextInput
-                style={styles.note}
-                onChangeText={(val: any) => {
-                  setTitle(val)
-                }}
-                value={title}
-                numberOfLines={1}
-              />
-              <TextInput
-                style={styles.note}
-                onChangeText={(val: any) => {
-                  setDesc(val)
-                }}
-                value={desc}
-                numberOfLines={4}
-              />
-              <Button
-                onPress={editThought}
-                title="Add Thought"
-                color="#841584"
-                accessibilityLabel="Learn more about this purple button"
-              />
-            </TouchableOpacity>
-          </View>
-        </Modal>
+          </Modal>
         </View>
       </SafeAreaView>
     </Screen>
@@ -254,17 +321,18 @@ const styles = StyleSheet.create({
   },
   head: {
     fontSize: 20,
-    marginTop: 20
+    marginTop: 20,
   },
   categories: {
     fontSize: 20,
-    translateY: -20
+    translateY: -20,
   },
   container: {
     flex: 1,
     // marginTop: StatusBar.currentHeight || 0,
   },
-  noteList: {},
+  typesList: {},
+  notesList: {},
   modalView: {
     margin: 20,
     // width: "80%",
@@ -288,7 +356,7 @@ const styles = StyleSheet.create({
   },
   types: {
     flex: 1,
-    justifyItems: 'center',
+    justifyItems: "center",
     height: "10%",
   },
   button: {
@@ -313,8 +381,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   bbutton: {
-    backgroundColor:"#841584",
-
+    backgroundColor: "#841584",
   },
   note: {
     color: "#fff",
@@ -323,3 +390,10 @@ const styles = StyleSheet.create({
     left: 10,
   },
 })
+
+const $flatListStyle: ViewStyle = {
+  paddingHorizontal: spacing.extraSmall,
+  backgroundColor: colors.palette.neutral200,
+  flex: 1,
+  overflow: "scroll",
+}
