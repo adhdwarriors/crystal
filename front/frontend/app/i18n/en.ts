@@ -44,7 +44,7 @@ const en = {
   demoNavigator: {
     componentsTab: "Components",
     debugTab: "Debug",
-    communityTab: "Community",
+    communityTab: "Test",
     podcastListTab: "Podcast",
   },
   demoCommunityScreen: {

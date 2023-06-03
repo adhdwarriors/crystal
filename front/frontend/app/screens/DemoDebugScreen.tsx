@@ -19,7 +19,7 @@ import { DemoTabScreenProps } from "../navigators/DemoNavigator"
 import { colors, spacing } from "../theme"
 import { isRTL } from "../i18n"
 import { useStores } from "../models"
-import { Thought, THOUGHTS, SPHERES, TYPES, DefaultThought } from "app/Types"
+import { Thought, THOUGHTS, SPHERES, TYPES, DefaultThought, LifeSphere } from "app/Types"
 import { Picker } from "@react-native-picker/picker"
 import ThoughtCard from "../components/ThoughtCard"
 import ThoughtCardMag from "../components/ThoughtCardMag"
@@ -28,6 +28,7 @@ import useNotes, { filterOnTopics, filterOnTypes } from "../services/backend/use
 const GET_URL = "http://172.104.196.152:3000/user?user_id=1&token=blah"
 const URL = "http://172.104.196.152:3000/note/create"
 const SPHERES_GET_URL = "http://172.104.196.152:3000/sphere"; 
+import useThoughts from "../services/backend/useThoughts";
 
 import { DemoUseCase } from "../screens/DemoShowroomScreen/DemoUseCase"
 
@@ -43,7 +44,7 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
     console.log("SPHERE:", item)
     setLifeSpheres(
       lifeSpheres.map((sphere, index) =>
-        index == item.id ? !lifeSpheres[index] : lifeSpheres[index],
+        index+1 == item.id ? !lifeSpheres[index] : lifeSpheres[index],
       ),
     )
   }
@@ -53,35 +54,29 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
   const toggleSphere = (item) => {
     setLifeSpheres(lifeSpheres.map((type, index) => index == item.id ? !lifeSpheres[index] : lifeSpheres[index]))
   }
-  type Sphere = { id: number; title: string}
+
 
   // const THOUGHTS = useNotes(0); // pass in user id
   const [thoughts, setThoughts] = useState<any>([{ body: "" }])
+  // const thoughts = useThoughts();
   const [mode, setMode] = useState<number>(0)
   const [selThought, setSelThought] = useState<number>(0)
   const [thought, setThought] = useState<Thought>(DefaultThought)
-  const [spheres, setSpheres] = useState<Sphere[]>([{title: "Gym", id: 0}, {title: "Orchestra", id: 1} ]);
+  const [spheres, setSpheres] = useState<LifeSphere[]>([]);
   const [lifeSpheres, setLifeSpheres] = useState<boolean[]>(
     spheres.map((sphere, id) => {
       return true
     }),
   )
   const [types, setTypes] = useState<boolean[]>(
-    TYPES.map((type, id) => {
-      return true
+    TYPES.map((sphere, id) => {
+      return false
     }),
   )
   const [editedThought, setEditedThought] = useState<Thought>(THOUGHTS[selThought])
+
   const [title, setTitle] = useState<string>(THOUGHTS[selThought].title)
   const [desc, setDesc] = useState<string>(THOUGHTS[selThought].desc)
-
-  const spheresCallback = async () => {
-    fetch(SPHERES_GET_URL, { method: "GET" })
-    .then(res => res.json())
-    .then((res) => {
-      setSpheres(res.spheres.map((sphere, index) =>
-       {return {title: sphere, id: index}}))})
-  };
 
   const insertThought = () => {
     const { id, title, desc } = thought
@@ -117,11 +112,21 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
     setMode(0)
   }
 
+// TODO: what is this... 
   const openMod = (id: number) => {
     setSelThought(id)
     setMode(2)
   }
-  // console.log(thoughts)
+
+  const spheresCallback = async () => {
+    fetch(SPHERES_GET_URL, { method: "GET" })
+    .then(res => res.json())
+    .then((res) => {
+      console.log("SPHERES:", res.spheres)
+      setSpheres(res.spheres.map((sphere, index) =>
+       {return {title: sphere, id: index}}))})
+      setLifeSpheres(spheres.map((sphere, id) => {return true}))
+  };
 
   useEffect(() => {
     fetch(GET_URL, { method: "GET" })
@@ -139,34 +144,60 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
         })
         setThoughts(
           thoughts.filter((t, index) => {
+            console.log("T:", t, "life spheres", lifeSpheres, "types", types)
             return lifeSpheres[t.sphere_id] && types[t.type_id]
           }),
-        );
-        console.log(SPHERES)
+        )
       })
       .catch((error) => console.log("ERRORRRRR", error))
   }, [lifeSpheres, types])
+
+  // OLD USE EFFECT
+  // useEffect(() => {
+  //   fetch(GET_URL, { method: "GET" })
+  //     .then((response) => response.json())
+  //     .then((response) => {
+  //       let thoughts = response.notes.map((note, index) => {
+  //         return {
+  //           id: note.id,
+  //           sphere_id: parseInt(note.sphere_id),
+  //           desc: note.desc,
+  //           title: note.title,
+  //           type_id: parseInt(note.type_id),
+  //           type: TYPES[parseInt(note.type_id)],
+  //         }
+  //       })
+  //       setThoughts(
+  //         thoughts.filter((t, index) => {
+  //           console.log("T:", t, "life spheres", lifeSpheres, "types", types)
+  //           return lifeSpheres[t.sphere_id] && types[t.type_id]
+  //         }),
+  //       )
+  //     })
+  //     .catch((error) => console.log("ERRORRRRR", error))
+  // }, [])
 
   return (
     <Screen preset="scroll" style={styles.container} safeAreaEdges={["top"]}>
       <SafeAreaView style={styles.container}>
         <View>
           <View style={{ height: 85, marginTop: 75 }}>
+            <TextInput style={styles.what} placeholder={"What are you up to?"}></TextInput>
             <FlatList
               data={["hi", "hello"]}
               style={$flatListStyle}
               renderItem={({ item, index }) => (
                 <FlatList
-                  data={index == 0 ? TYPES : TYPES}
+                  data={index == 0 ? TYPES : spheres}
                   style={styles.typesList}
                   numColumns={4}
                   keyExtractor={(item) => {
                     return item.title
                   }}
-                  renderItem={({item}) => (
+                  renderItem={({item: item}) => (
                     <SelectMultipleButton
                       multiple={true}
-                      value={item}
+                      value={item.title}
                       key={item.id}
                       selected={index == 0 ? types[item.id] : lifeSpheres[item.id]}
                       singleTap={index == 0 ? ((valTap) => { toggleType(item)}) : ((valTap) => { toggleSphere(item)})}
@@ -191,26 +222,25 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
             // onEndReached={({ distanceFromEnd }) => {this.loadMore()}}
           />
           <Button
+                    onPress={spheresCallback}
+                    title="Spheres"
+                  />
+          <Button
             onPress={() => {
               setMode(1)
               setLifeSpheres(
                 spheres.map((sphere) => {
-                  return true
+                  return false
                 }),
               )
               setTypes(
                 TYPES.map((type) => {
-                  return true
+                  return false
                 }),
               )
             }}
             title="Add Thought"
             // style={styles.bbutton}
-            accessibilityLabel="Learn more about this purple button"
-          />
-          <Button
-            onPress={spheresCallback}
-            title="Spheres"
             accessibilityLabel="Learn more about this purple button"
           />
           <Modal visible={mode == 1}>
@@ -219,7 +249,7 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
                 <View style={{ height: "70%" }}>
                   <TextInput
                     style={styles.text}
-                    placeholder="ADD TITLE..."
+                    placeholder="What's on your mind?..."
                     value={thought.title}
                     onChangeText={(text) => setThought({ ...thought, title: text })}
                   />
@@ -263,16 +293,16 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
                       keyExtractor={(item, index) => {
                         return item.title
                       }}
-                      renderItem={({ item, index }) => (
+                      renderItem={({ item }) => (
                         <SelectMultipleButton
                           multiple={true}
-                          value={item}
+                          value={item.title}
                           key={item.id}
-                          selected={lifeSpheres[index]}
+                          selected={lifeSpheres[item.id]}
                           singleTap={(valTap) => {
                             setLifeSpheres(
                               lifeSpheres.map((sphere, index) =>
-                                index == index ? !lifeSpheres[index] : lifeSpheres[index],
+                                index == item.id ? !lifeSpheres[index] : lifeSpheres[index],
                               ),
                             )
                           }}
@@ -404,6 +434,11 @@ const styles = StyleSheet.create({
     top: 10,
     left: 10,
   },
+  what: {
+    fontSize: 32,
+    color: '#2196F3',
+    marginBottom: 20
+  }
 })
 
 const $flatListStyle: ViewStyle = {
