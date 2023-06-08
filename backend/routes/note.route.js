@@ -43,7 +43,7 @@ router.post('/create', (req, res) => {
     let sphere_id;
     if (value.sphere_id) {
         sphere_id = value.sphere_id;
-        finishCreate(value, sphere_id, res);
+        finishCreate(value, sphere_id, res, "");
     } else {
         openai.getBestMatch({title: value.title, desc: value.desc})
           .then(result => {
@@ -53,7 +53,7 @@ router.post('/create', (req, res) => {
                     sphere_id = id;
                     if (!sphere_id) sphere_id = 1;
                     console.log('FALLBACK SPHERE ID: ' + sphere_id);
-                    finishCreate(value, sphere_id, res);
+                    finishCreate(value, sphere_id, res, sphere_title);
                 })
                 .catch(error => {
                     // An error occurred
@@ -71,7 +71,7 @@ router.post('/create', (req, res) => {
     }
 });
 
-function finishCreate(value, sphere_id, res) {
+function finishCreate(value, sphere_id, res, ai) {
     const note = {
         id: crypto.randomUUID(),
         sphere_id: sphere_id,
@@ -88,6 +88,7 @@ function finishCreate(value, sphere_id, res) {
           const success_response = {
               response: 200,
               note: note,
+              ai: ai,
               user_id: value.user_id
           };
           res.writeHead(200, headers.JSON);
