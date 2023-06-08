@@ -31,31 +31,22 @@ const GET_SPHERE_URL = "http://172.104.196.152:3000/sphere"
 const URL = "http://172.104.196.152:3000/note/create"
 const SPHERE_URL = "http://172.104.196.152:3000/sphere/create"
 
-import { DemoUseCase } from "../screens/DemoShowroomScreen/DemoUseCase"
+import { DemoUseCase } from "./DemoShowroomScreen/DemoUseCase"
 
-export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function DemoDebugScreen(
+export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function ThoughtsScreen(
   _props,
 ) {
   const {
     authenticationStore: { logout },
   } = useStores()
 
-  const toggleSpheresFilter = (item) => {
-    console.log("SPHERE:", item)
-    setLifeSpheres(
-      lifeSpheres.map((sphere, index) =>
-        index == item.id ? !lifeSpheres[index] : lifeSpheres[index],
-      ),
-    )
-  }
-
   const toggleType = (item) => {
     setTypes(types.map((type, index) => (index == item.id ? !types[index] : types[index])))
   }
   const toggleSphere = (item) => {
-    setLifeSpheres(
-      lifeSpheres.map((type, index) =>
-        index == item.id ? !lifeSpheres[index] : lifeSpheres[index],
+    setSelSpheres(
+      selSpheres.map((type, index) =>
+        index == item.id ? !selSpheres[index] : selSpheres[index],
       ),
     )
   }
@@ -66,9 +57,9 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
   const [selThought, setSelThought] = useState<number>(0)
   const [thought, setThought] = useState<Thought>(DefaultThought)
   const [sphere, setSphere] = useState<LifeSphere>({ id: 0, title: "" })
-  const [spheres, setSpheres] = useState<LifeSphere[]>()
-  const [lifeSpheres, setLifeSpheres] = useState<boolean[]>(
-    SPHERES.map((sphere, id) => {
+  const [spheres, setSpheres] = useState<LifeSphere[]>([])
+  const [selSpheres, setSelSpheres] = useState<boolean[]>(
+    spheres.map((sphere, id) => {
       return id == 0
     }),
   )
@@ -107,9 +98,8 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
 
   const insertThought = () => {
     const { id, title, desc } = thought
-    const Spheres = lifeSpheres
-      .map((val, id) => (lifeSpheres[id] ? id : -1))
-      .filter((val, id) => val != -1)
+    const chosenSphere = selSpheres.findIndex((sphere) => sphere)
+    console.log("CHOSEN SPHERE for", title, ", ", chosenSphere)
     const Types = types.map((val, id) => (types[id] ? id : -1)).filter((val, id) => val != -1)
     fetch(URL, {
       method: "POST",
@@ -119,7 +109,7 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
       // CHANGE THIS
       body: JSON.stringify({
         desc: desc,
-        sphere_id: Spheres[0],
+        sphere_id: chosenSphere,
         type_id: Types[0],
         title: title,
         user_id: 1,
@@ -167,18 +157,18 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
         })
 
         let spheres = data[1].spheres.map((sphere, index) => {return {id: index, title: sphere}})
+        console.log("THOUGHTS:", thoughts);
         setThoughts(
           thoughts.filter((t, index) => {
-            console.log("T:", t, "life spheres", lifeSpheres, "types", types)
-            return lifeSpheres[t.sphere_id] && types[t.type_id]
+            return selSpheres[t.sphere_id] && types[t.type_id]
           }),
         )
         setSpheres(spheres)
-        console.log("MY SPHERES:", spheres)
+        console.log("MY SpheRes:", spheres)
       })
       
       .catch((error) => console.log("ERRORRRRR", error))
-  }, [])
+  }, [selSpheres, types])
 
   return (
     <Screen preset="scroll" style={styles.container} safeAreaEdges={["top"]}>
@@ -192,7 +182,7 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
               style={$flatListStyle}
               renderItem={({ item, index }) => (
                 <FlatList
-                  data={index == 0 ? TYPES : SPHERES}
+                  data={index == 0 ? TYPES : spheres}
                   style={styles.typesList}
                   numColumns={4}
                   keyExtractor={(item) => {
@@ -203,7 +193,7 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
                       multiple={true}
                       value={item.title}
                       key={item.id}
-                      selected={index == 0 ? types[item.id] : lifeSpheres[item.id]}
+                      selected={index == 0 ? types[item.id] : selSpheres[item.id]}
                       singleTap={
                         index == 0
                           ? (valTap) => {
@@ -235,8 +225,8 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
           <Button
             onPress={() => {
               setMode(1)
-              setLifeSpheres(
-                SPHERES.map((sphere, id) => {
+              setSelSpheres(
+                spheres.map((sphere, id) => {
                   return id == 0
                 }),
               )
@@ -256,6 +246,7 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
             color="#841584"
             accessibilityLabel="Learn more about this purple button"
           />
+          {/* ADD A THOUGHT MODAL */}
           <Modal visible={mode == 1}>
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
@@ -311,11 +302,11 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
                           multiple={true}
                           value={item.title}
                           key={item.id}
-                          selected={lifeSpheres[item.id]}
+                          selected={selSpheres[item.id]}
                           singleTap={(valTap) => {
-                            setLifeSpheres(
-                              lifeSpheres.map((sphere, index) =>
-                                index == item.id ? !lifeSpheres[index] : lifeSpheres[index],
+                            setSelSpheres(
+                              selSpheres.map((sphere, index) =>
+                                index == item.id ? !selSpheres[index] : selSpheres[index],
                               ),
                             )
                           }}
@@ -334,6 +325,8 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
               </View>
             </View>
           </Modal>
+          
+          {/* ADD A SPHERE MODAL */}
           <Modal visible={mode == 2}>
             <View style={styles.centeredView}>
               <View style={styles.modalView}>

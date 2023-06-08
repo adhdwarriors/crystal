@@ -80,7 +80,7 @@ const ko: Translations = {
     demoViaTxProp: "`tx` Prop 을 통해",
     demoViaSpecifiedTxProp: "`{{prop}}Tx` Prop 을 통해",
   },
-  demoDebugScreen: {
+  demoThoughtsScreen: {
     howTo: "사용방법",
     title: "디버그",
     tagLine:

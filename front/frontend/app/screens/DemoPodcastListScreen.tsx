@@ -11,7 +11,7 @@ import LifeSphereCard from "../components/LifeSphereCard";
 const URL = "http://172.104.196.152:3000/sphere/create"; 
 const GET_URL = "http://172.104.196.152:3000/sphere"; 
 
-export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoDebug">> = function DemoDebugScreen(
+export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoThoughts">> = function DemoPodcastScreen(
   _props,
 ) {
   const {
