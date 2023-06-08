@@ -156,14 +156,15 @@ export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function Thoug
           }
         })
 
-        let spheres = data[1].spheres.map((sphere, index) => {return {id: index, title: sphere}})
+        let dataSpheres = data[1].spheres.map((sphere, index) => {return {id: index, title: sphere}})
         console.log("THOUGHTS:", thoughts);
         setThoughts(
           thoughts.filter((t, index) => {
             return selSpheres[t.sphere_id] && types[t.type_id]
           }),
         )
-        setSpheres(spheres)
+        setSpheres(dataSpheres)
+        // TODO: FIX THE SELSPHERES THING!! 
         console.log("MY SpheRes:", spheres)
       })
       
