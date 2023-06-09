@@ -70,7 +70,7 @@ export const DemoCommunityScreen: FC<DemoTabScreenProps<"DemoCommunity">> =
             <TextField
         label="BrainDump"
         helper="30 seconds to go crazy - write whatever's on your mind!"
-        placeholder="Eiusmod exercitation mollit elit magna occaecat eiusmod Lorem minim veniam. Laborum Lorem velit velit minim irure ad in ut adipisicing consectetur."
+        placeholder="Start typing. . ."
         value={rest}
         onChange={(val: string) => setRest(val)}
         multiline

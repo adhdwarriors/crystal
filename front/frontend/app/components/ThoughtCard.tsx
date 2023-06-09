@@ -12,7 +12,7 @@ export const Thought =
     {
         return (
             <TouchableOpacity
-                // onPress={() => {_props.openMod(_props.data.id)}}
+                onPress={() => {_props.openMod(_props.index)}}
             // onLongPress={()=>{this.deleteHandler(this.props.data)}}
                 style={[styles.card,{backgroundColor: "#121212"}]}>
 

@@ -29,6 +29,7 @@ const GET_URL = "http://172.104.196.152:3000/user?user_id=1&token=blah"
 const GET_SPHERE_URL = "http://172.104.196.152:3000/sphere"
 
 const URL = "http://172.104.196.152:3000/note/create"
+const EDIT_URL = "http://172.104.196.152:3000/note/edit"
 const SPHERE_URL = "http://172.104.196.152:3000/sphere/create"
 
 import { DemoUseCase } from "./DemoShowroomScreen/DemoUseCase"
@@ -51,10 +52,9 @@ export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function Thoug
     )
   }
 
-  // const THOUGHTS = useNotes(0); // pass in user id
   const [thoughts, setThoughts] = useState<any>([{ body: "" }])
+  const [reload, setReload] = useState<boolean>(false)
   const [mode, setMode] = useState<number>(0)
-  const [selThought, setSelThought] = useState<number>(0)
   const [thought, setThought] = useState<Thought>(DefaultThought)
   const [sphere, setSphere] = useState<LifeSphere>({ id: 0, title: "" })
   const [spheres, setSpheres] = useState<LifeSphere[]>([])
@@ -64,18 +64,18 @@ export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function Thoug
     }),
   )
   const [types, setTypes] = useState<boolean[]>(
-    TYPES.map((sphere, id) => {
+    TYPES.map((type, id) => {
       return id == 0
     }),
   )
-
-  const [editedThought, setEditedThought] = useState<Thought>(THOUGHTS[selThought])
-  const [title, setTitle] = useState<string>(THOUGHTS[selThought].title)
-  const [desc, setDesc] = useState<string>(THOUGHTS[selThought].desc)
+  
+  // editing thoughts 
+  const [selThought, setSelThought] = useState<number>(0)
+  const [selTitle, setSelTitle] = useState<string>("")
+  const [selDesc, setSelDesc] = useState<string>("")
 
   const insertSphere = () => {
     const { id, title } = sphere
-    console.log("SPHERE: ", title)
     if (title != "") {
       fetch(SPHERE_URL, {
         method: "POST",
@@ -87,9 +87,6 @@ export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function Thoug
         }),
       })
         .then((res) => res.json())
-        .then((res) => {
-          console.log("POST to Spheres,", res)
-        })
         .catch((error) => console.log(error))
     }
     setMode(0)
@@ -120,20 +117,45 @@ export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function Thoug
         // console.log(res)
         setThought(DefaultThought)
         setMode(0)
+        setReload(!reload)
       })
       .catch((error) => console.log(error))
   }
 
   const editThought = () => {
-    THOUGHTS[selThought] = { ...THOUGHTS[selThought], title: title, desc: desc }
+    // use selTitle, selDesc, and selThought to edit !! 
+    console.log("SEL THOUGHT", thoughts[selThought])
+    const thought = thoughts[selThought]
+    const th = {
+      note_uuid: thought.id,
+      sphere_id: thought.sphere_id,
+      title: selTitle,
+      desc: selDesc,
+      type_id: thought.type_id,
+      user_id: 0}
+      console.log("TH:", th)
+    fetch(EDIT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        note_uuid: thought.id,
+        sphere_id: thought.sphere_id,
+        title: selTitle,
+        desc: selDesc,
+        type_id: thought.type_id,
+        user_id: 0
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => console.log("SUCCESSFUL EDIT:", res))
+      .catch((error) => console.log(error))
     setMode(0)
+    setReload(!reload)
   }
 
-  const openMod = (id: number) => {
-    setSelThought(id)
-    setMode(2)
-  }
-
+  
   useEffect(() => {
     const getThoughts = fetch(GET_URL)
     const getSpheres = fetch(GET_SPHERE_URL)
@@ -164,22 +186,20 @@ export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function Thoug
           }),
         )
         setSpheres(dataSpheres)
-        // TODO: FIX THE SELSPHERES THING!! 
-        console.log("MY SpheRes:", spheres)
       })
       
       .catch((error) => console.log("ERRORRRRR", error))
-  }, [selSpheres, types])
+  }, [selSpheres, types, reload])
 
   return (
     <Screen preset="scroll" style={styles.container} safeAreaEdges={["top"]}>
       <SafeAreaView style={styles.container}>
         <View>
-          <View style={{ height: 120, marginTop: 75 }}>
-            <TextInput style={styles.what} placeholder={"What are you up to?"}></TextInput>
+          <View style={{ height: 110, marginTop: 75 }}>
+            <Text style={styles.what} text={"What's on your mind?"}></Text>
 
             <FlatList
-              data={["hi", "hello"]}
+              data={["types", "spheres"]}
               style={$flatListStyle}
               renderItem={({ item, index }) => (
                 <FlatList
@@ -219,9 +239,19 @@ export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function Thoug
             numColumns={2}
             // onRefresh={._onRefresh}
             // refreshing={this.props.notes.isLoading}
-            renderItem={({ item }) => <ThoughtCard data={item} openMod={openMod} />}
-            // onEndReachedThreshold={0.1}
-            // onEndReached={({ distanceFromEnd }) => {this.loadMore()}}
+            renderItem={({ item, index}) => <ThoughtCard data={item} index={index} openMod={async (index: any) => {
+              setSelThought(index)
+              console.log("INDEX: ", index)
+              console.log("THOUGHTS: ", thoughts)
+              if (index < thoughts.length)
+              {
+                console.log("THE THOUGHT", thoughts[index])
+                console.log("to set title:", thoughts[index].title)
+                setSelTitle(thoughts[index].title)
+                setSelDesc(thoughts[index].desc)
+              }
+              setMode(3)
+            }} />}
           />
           <Button
             onPress={() => {
@@ -269,7 +299,7 @@ export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function Thoug
                   <Text style={styles.head}>Type</Text>
                   <FlatList
                     data={TYPES}
-                    numColumns={3}
+                    numColumns={4}
                     keyExtractor={(item, index) => {
                       return item.title
                     }}
@@ -349,6 +379,30 @@ export const ThoughtsScreen: FC<DemoTabScreenProps<"Thoughts">> = function Thoug
               </View>
             </View>
           </Modal>
+          <Modal visible={mode == 3}>
+          <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <View style={{ height: "30%" }}>
+                  <TextInput
+                    style={styles.text}
+                    value={selTitle}
+                    onChangeText={(text) => setSelTitle(text)}
+                  />
+                  <TextInput
+                    style={styles.text}
+                    value={selDesc}
+                    onChangeText={(text) => setSelDesc(text)}
+                  />
+                  <Button
+                    onPress={editThought}
+                    title="Edit Note"
+                    color="#841584"
+                    accessibilityLabel="Learn more about this purple button"
+                  />
+                </View>
+              </View>
+            </View>
+          </Modal>
         </View>
       </SafeAreaView>
     </Screen>
@@ -375,7 +429,7 @@ const styles = StyleSheet.create({
   notesList: {},
   modalView: {
     margin: 20,
-    width: "70%",
+    width: "90%",
     backgroundColor: "white",
     borderRadius: 20,
     padding: "5%",
